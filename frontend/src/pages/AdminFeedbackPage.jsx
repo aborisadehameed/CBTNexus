@@ -135,6 +135,21 @@ const AdminFeedbackPage = () => {
     }
   };
 
+  const handleDeleteMessage = async (messageId) => {
+    if (!selectedFeedback || !messageId) return;
+    if (!window.confirm("Are you sure you want to delete this reply?")) return;
+    try {
+      const res = await api.delete(`/feedback/admin/${selectedFeedback._id}/message/${messageId}`);
+      setSelectedFeedback(res.data);
+      setFeedbacks((prev) =>
+        prev.map((f) => (f._id === res.data._id ? res.data : f))
+      );
+    } catch (err) {
+      console.error("Failed to delete message reply:", err);
+      alert(err.response?.data?.message || "Failed to delete message");
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case "resolved":
@@ -305,12 +320,27 @@ const AdminFeedbackPage = () => {
                           <span className="msg-author">
                             {isAdmin ? "Admin (You)" : `${msg.senderName} (Student)`}
                           </span>
-                          <span className="msg-time">
-                            {new Date(msg.createdAt).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
+                          <div className="msg-header-right">
+                            <span className="msg-time">
+                              {new Date(msg.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                            {msg._id && (
+                              <button
+                                type="button"
+                                className="btn-msg-delete"
+                                title="Delete reply"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteMessage(msg._id);
+                                }}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <div className="msg-body">{msg.text}</div>
                       </div>
@@ -725,6 +755,27 @@ const AdminFeedbackPage = () => {
         .msg-time {
           font-weight: normal;
           font-size: 0.7rem;
+        }
+        .msg-header-right {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .btn-msg-delete {
+          background: transparent;
+          border: none;
+          color: inherit;
+          opacity: 0.6;
+          cursor: pointer;
+          font-size: 0.8rem;
+          padding: 0 4px;
+          border-radius: 4px;
+          line-height: 1;
+          transition: opacity 0.2s, background 0.2s;
+        }
+        .btn-msg-delete:hover {
+          opacity: 1;
+          background: rgba(0, 0, 0, 0.15);
         }
         .msg-body {
           white-space: pre-wrap;

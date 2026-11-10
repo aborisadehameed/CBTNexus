@@ -24,4 +24,46 @@ router.get("/stats", authenticateToken, authorizeAdmin, async (req, res) => {
   }
 });
 
+// POST /api/admin/activate-user — activate lifetime access for a user by email
+router.post("/activate-user", authenticateToken, authorizeAdmin, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOneAndUpdate(
+      { email: email.trim().toLowerCase() },
+      {
+        $set: {
+          isPaid: true,
+          paidAt: new Date(),
+          paymentReference: "MANUAL_ACTIVATION_ADMIN",
+        },
+      },
+      { new: true }
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: `User with email ${email} not found` });
+    }
+
+    console.log(`[Admin] Activated lifetime access for: ${user.email}`);
+    res.json({
+      success: true,
+      message: `User ${user.email} successfully activated!`,
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        isPaid: user.isPaid,
+        paidAt: user.paidAt,
+      },
+    });
+  } catch (err) {
+    console.error("Admin activate-user error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;

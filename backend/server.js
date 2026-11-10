@@ -16,6 +16,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import ServerStats from "./models/ServerStats.js";
+import User from "./models/User.js";
 
 dotenv.config();
 const app = express();
@@ -193,6 +194,22 @@ const PORT = process.env.PORT || 5000;
 // Connect DB, load the persisted peak, then start listening
 connectDB()
   .then(loadPersistedPeak)
+  .then(async () => {
+    try {
+      // Auto-activate pending manual user if exists
+      const targetEmail = "rhomesandproperty@gmail.com";
+      const pendingUser = await User.findOne({ email: targetEmail });
+      if (pendingUser && !pendingUser.isPaid) {
+        pendingUser.isPaid = true;
+        pendingUser.paidAt = pendingUser.paidAt || new Date();
+        pendingUser.paymentReference = pendingUser.paymentReference || "MANUAL_ACTIVATION_RECOVERY";
+        await pendingUser.save();
+        console.log(`✅ [Startup] Automatically activated lifetime access for ${targetEmail}`);
+      }
+    } catch (actErr) {
+      console.warn("⚠️  [Startup] Note on auto-activation:", actErr.message);
+    }
+  })
   .then(() => {
     server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })

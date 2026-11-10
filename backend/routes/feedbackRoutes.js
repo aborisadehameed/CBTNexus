@@ -8,6 +8,7 @@ import {
   getAllFeedbacksAdmin,
   updateFeedbackStatusAdmin,
   deleteFeedbackAdmin,
+  deleteFeedbackMessageAdmin,
 } from "../controllers/feedbackController.js";
 
 const router = express.Router();
@@ -22,5 +23,6 @@ router.post("/:id/reply", protect, replyFeedback);
 router.get("/admin/all", protect, authorizeAdmin, getAllFeedbacksAdmin);
 router.patch("/admin/:id/status", protect, authorizeAdmin, updateFeedbackStatusAdmin);
 router.delete("/admin/:id", protect, authorizeAdmin, deleteFeedbackAdmin);
+router.delete("/admin/:id/message/:messageId", protect, authorizeAdmin, deleteFeedbackMessageAdmin);
 
 export default router;

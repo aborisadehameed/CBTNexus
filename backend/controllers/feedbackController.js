@@ -237,3 +237,42 @@ export const deleteFeedbackAdmin = async (req, res) => {
     res.status(500).json({ message: "Server error deleting feedback." });
   }
 };
+
+
+// @desc    Admin: Delete a specific message/reply in a feedback thread
+// @route   DELETE /api/feedback/admin/:id/message/:messageId
+// @access  Private (Admin Only)
+export const deleteFeedbackMessageAdmin = async (req, res) => {
+  try {
+    const { id, messageId } = req.params;
+
+    const feedback = await Feedback.findById(id);
+    if (!feedback) {
+      return res.status(404).json({ message: "Feedback thread not found." });
+    }
+
+    const messageIndex = feedback.messages.findIndex(
+      (m) => m._id.toString() === messageId
+    );
+
+    if (messageIndex === -1) {
+      return res.status(404).json({ message: "Message not found in thread." });
+    }
+
+    // Remove the message
+    feedback.messages.splice(messageIndex, 1);
+    await feedback.save();
+
+    const updated = await Feedback.findById(feedback._id)
+      .populate("user", "name email avatar role")
+      .populate("messages.sender", "name avatar role");
+
+    res.json({
+      message: "Reply deleted successfully.",
+      feedback: updated,
+    });
+  } catch (err) {
+    console.error("Error deleting feedback message:", err);
+    res.status(500).json({ message: "Server error deleting feedback message." });
+  }
+};
