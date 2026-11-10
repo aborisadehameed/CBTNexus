@@ -30,6 +30,13 @@ const FeedbackPage = () => {
   const [successMsg, setSuccessMsg] = useState("");
 
   const messagesEndRef = useRef(null);
+  const shouldScrollRef = useRef(false);
+  const prevSelectedIdRef = useRef(null);
+  const prevMsgCountRef = useRef(0);
+
+  const scrollToBottom = (smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
+  };
 
   const fetchFeedbacks = async (autoSelectId = null) => {
     try {
@@ -38,13 +45,23 @@ const FeedbackPage = () => {
       if (res.data.length > 0) {
         if (autoSelectId) {
           const matched = res.data.find((f) => f._id === autoSelectId);
+          shouldScrollRef.current = true;
           setSelectedFeedback(matched || res.data[0]);
         } else if (!selectedFeedback) {
+          shouldScrollRef.current = true;
           setSelectedFeedback(res.data[0]);
         } else {
-          // Update selected thread in place
+          // Background poll: update selected thread in place only if same thread
           const updatedSelected = res.data.find((f) => f._id === selectedFeedback._id);
-          if (updatedSelected) setSelectedFeedback(updatedSelected);
+          if (updatedSelected) {
+            const newCount = updatedSelected.messages?.length || 0;
+            const oldCount = prevMsgCountRef.current;
+            // Only scroll if new messages arrived (someone else replied)
+            if (newCount > oldCount) {
+              shouldScrollRef.current = true;
+            }
+            setSelectedFeedback(updatedSelected);
+          }
         }
       }
     } catch (err) {
@@ -60,11 +77,25 @@ const FeedbackPage = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Controlled scroll: only fires when shouldScrollRef is explicitly set
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [selectedFeedback?.messages]);
+    const msgs = selectedFeedback?.messages;
+    const currentId = selectedFeedback?._id;
+    const msgCount = msgs?.length || 0;
+
+    if (shouldScrollRef.current) {
+      scrollToBottom(prevSelectedIdRef.current === currentId); // instant on new thread, smooth on new msg
+      shouldScrollRef.current = false;
+    }
+
+    prevSelectedIdRef.current = currentId;
+    prevMsgCountRef.current = msgCount;
+  }, [selectedFeedback]);
 
   const handleSelectFeedback = async (item) => {
+    // Clear reply text from previous thread and scroll to bottom of new thread
+    setReplyText("");
+    shouldScrollRef.current = true;
     setSelectedFeedback(item);
     try {
       // Mark as read on backend
@@ -113,6 +144,7 @@ const FeedbackPage = () => {
       const res = await api.post(`/feedback/${selectedFeedback._id}/reply`, {
         text: replyText.trim(),
       });
+      shouldScrollRef.current = true;
       setSelectedFeedback(res.data);
       setFeedbacks((prev) =>
         prev.map((f) => (f._id === res.data._id ? res.data : f))

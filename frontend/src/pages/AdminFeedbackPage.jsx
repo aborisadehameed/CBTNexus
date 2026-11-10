@@ -20,6 +20,13 @@ const AdminFeedbackPage = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const shouldScrollRef = useRef(false);
+  const prevSelectedIdRef = useRef(null);
+  const prevMsgCountRef = useRef(0);
+
+  const scrollToBottom = (smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
+  };
 
   // Admin Guard
   useEffect(() => {
@@ -43,12 +50,21 @@ const AdminFeedbackPage = () => {
       if (res.data.length > 0) {
         if (autoSelectId) {
           const matched = res.data.find((f) => f._id === autoSelectId);
+          shouldScrollRef.current = true;
           setSelectedFeedback(matched || res.data[0]);
         } else if (!selectedFeedback) {
+          shouldScrollRef.current = true;
           setSelectedFeedback(res.data[0]);
         } else {
           const updatedSelected = res.data.find((f) => f._id === selectedFeedback._id);
-          if (updatedSelected) setSelectedFeedback(updatedSelected);
+          if (updatedSelected) {
+            const newCount = updatedSelected.messages?.length || 0;
+            const oldCount = prevMsgCountRef.current;
+            if (newCount > oldCount) {
+              shouldScrollRef.current = true;
+            }
+            setSelectedFeedback(updatedSelected);
+          }
         }
       } else {
         setSelectedFeedback(null);
@@ -68,11 +84,24 @@ const AdminFeedbackPage = () => {
     }
   }, [user, statusFilter, categoryFilter, searchQuery]);
 
+  // Controlled scroll: only fires when shouldScrollRef is explicitly set
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [selectedFeedback?.messages]);
+    const currentId = selectedFeedback?._id;
+    const msgCount = selectedFeedback?.messages?.length || 0;
+
+    if (shouldScrollRef.current) {
+      scrollToBottom(prevSelectedIdRef.current === currentId);
+      shouldScrollRef.current = false;
+    }
+
+    prevSelectedIdRef.current = currentId;
+    prevMsgCountRef.current = msgCount;
+  }, [selectedFeedback]);
 
   const handleSelectFeedback = async (item) => {
+    // Clear any in-progress reply text from the previous thread
+    setReplyText("");
+    shouldScrollRef.current = true;
     setSelectedFeedback(item);
     try {
       await api.get(`/feedback/${item._id}`);
@@ -92,6 +121,7 @@ const AdminFeedbackPage = () => {
       const res = await api.post(`/feedback/${selectedFeedback._id}/reply`, {
         text: replyText.trim(),
       });
+      shouldScrollRef.current = true;
       setSelectedFeedback(res.data);
       setFeedbacks((prev) =>
         prev.map((f) => (f._id === res.data._id ? res.data : f))
