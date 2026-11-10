@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import User from "../models/User.js";
@@ -225,6 +226,65 @@ router.post("/verify", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Payment verification route error:", error);
     res.status(500).json({ message: "Internal server error during verification." });
+  }
+});
+
+
+/**
+ * POST /api/payment/webhook
+ * Paystack Webhook — guarantees activation even if the user's mobile browser closes,
+ * redirects, or network drops before the frontend callback executes.
+ */
+router.post("/webhook", async (req, res) => {
+  try {
+    const secretKey = (process.env.PAYSTACK_SECRET_KEY || "").trim();
+    const signature = req.headers["x-paystack-signature"];
+
+    // If secret key is configured, verify HMAC signature
+    if (secretKey && signature) {
+      const hash = crypto
+        .createHmac("sha512", secretKey)
+        .update(JSON.stringify(req.body))
+        .digest("hex");
+
+      if (hash !== signature) {
+        console.warn("[Webhook] Invalid Paystack signature received.");
+        return res.status(400).send("Invalid signature");
+      }
+    }
+
+    const event = req.body;
+    if (event && event.event === "charge.success") {
+      const data = event.data;
+      const ref = data.reference;
+      const customerEmail = data.customer?.email?.toLowerCase().trim();
+
+      console.log(`[Webhook] Processing successful payment ref: ${ref} for ${customerEmail}`);
+
+      // Find user by reference or customer email
+      const user = await User.findOne({
+        $or: [
+          { paymentReference: String(ref) },
+          { email: customerEmail }
+        ]
+      });
+
+      if (user) {
+        user.isPaid = true;
+        user.paidAt = new Date();
+        user.paymentReference = String(ref);
+        await user.save();
+        console.log(`[Webhook] Successfully activated lifetime access for user ${user.email} (ID: ${user._id})`);
+      } else {
+        console.warn(`[Webhook] User not found for email: ${customerEmail}, ref: ${ref}`);
+      }
+    }
+
+    // Always respond with 200 OK to Paystack
+    res.status(200).send("OK");
+  } catch (err) {
+    console.error("[Webhook Error]:", err);
+    res.status(500).send("Webhook processing error");
   }
 });
 

@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  // Set user on load
+  // Set user on load and revalidate latest payment status from server
   useEffect(() => {
     const checkUser = async () => {
       const storedUser = localStorage.getItem("user");
@@ -73,6 +73,24 @@ export const AuthProvider = ({ children }) => {
           const parsed = JSON.parse(storedUser);
           setUser(parsed);
           openPresenceWS(parsed);
+
+          // Always fetch fresh user profile from backend to ensure isPaid is never stale
+          try {
+            const res = await api.get("/auth/me");
+            if (res.data?.user) {
+              const freshUser = res.data.user;
+              setUser(freshUser);
+              localStorage.setItem("user", JSON.stringify(freshUser));
+            }
+          } catch (freshErr) {
+            // If token expired or invalid, handle logout
+            if (freshErr.response?.status === 401) {
+              localStorage.removeItem("user");
+              localStorage.removeItem("token");
+              setUser(null);
+              setToken(null);
+            }
+          }
         } catch (e) {
           localStorage.removeItem("user");
           localStorage.removeItem("token");
