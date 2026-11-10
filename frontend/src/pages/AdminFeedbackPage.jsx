@@ -23,6 +23,13 @@ const AdminFeedbackPage = () => {
   const shouldScrollRef = useRef(false);
   const prevSelectedIdRef = useRef(null);
   const prevMsgCountRef = useRef(0);
+  // Keep a ref in sync with selectedFeedback so setInterval callbacks
+  // are never stuck on a stale closure value of null
+  const selectedFeedbackRef = useRef(null);
+
+  useEffect(() => {
+    selectedFeedbackRef.current = selectedFeedback;
+  }, [selectedFeedback]);
 
   const scrollToBottom = (smooth = true) => {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
@@ -52,11 +59,12 @@ const AdminFeedbackPage = () => {
           const matched = res.data.find((f) => f._id === autoSelectId);
           shouldScrollRef.current = true;
           setSelectedFeedback(matched || res.data[0]);
-        } else if (!selectedFeedback) {
+        } else if (!selectedFeedbackRef.current) {
+          // First load — no thread selected yet
           shouldScrollRef.current = true;
           setSelectedFeedback(res.data[0]);
         } else {
-          const updatedSelected = res.data.find((f) => f._id === selectedFeedback._id);
+          const updatedSelected = res.data.find((f) => f._id === selectedFeedbackRef.current._id);
           if (updatedSelected) {
             const newCount = updatedSelected.messages?.length || 0;
             const oldCount = prevMsgCountRef.current;

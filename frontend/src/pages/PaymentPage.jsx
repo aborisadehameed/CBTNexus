@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext, api } from "../context/AuthContext";
 import "../custom-theme.css";
@@ -12,6 +12,56 @@ const PaymentPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const activationPollRef = useRef(null);
+
+  // After the Paystack popup closes (either via callback or user closing it),
+  // poll /payment/status every 5s for up to 2 minutes to catch webhook-activated accounts
+  const startActivationPoll = (txRef) => {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 24; // 24 × 5s = 2 minutes
+    activationPollRef.current = setInterval(async () => {
+      attempts++;
+      try {
+        // Try to verify the specific reference first
+        const verifyRes = await api.post("/payment/verify", { reference: txRef, trxref: txRef });
+        if (verifyRes.data?.success) {
+          clearInterval(activationPollRef.current);
+          updateUser({ isPaid: true, paidAt: new Date() });
+          setSuccessMessage("Payment successful! You now have Lifetime Access.");
+          setIsProcessing(false);
+          setTimeout(() => navigate("/dashboard"), 2000);
+          return;
+        }
+      } catch {
+        // verify failed, fall through to status check
+      }
+      try {
+        // Also check if webhook already activated account
+        const statusRes = await api.get("/payment/status");
+        if (statusRes.data?.isPaid) {
+          clearInterval(activationPollRef.current);
+          updateUser({ isPaid: true, paidAt: statusRes.data.paidAt || new Date() });
+          setSuccessMessage("Payment confirmed! You now have Lifetime Access.");
+          setIsProcessing(false);
+          setTimeout(() => navigate("/dashboard"), 2000);
+          return;
+        }
+      } catch { /* ignore */ }
+
+      if (attempts >= MAX_ATTEMPTS) {
+        clearInterval(activationPollRef.current);
+        setIsProcessing(false);
+        setErrorMessage("Payment is taking longer than expected. If you were charged, your access will be activated within a few minutes. Contact support if it doesn't update.");
+      }
+    }, 5000);
+  };
+
+  // Cleanup poll on unmount
+  useEffect(() => {
+    return () => {
+      if (activationPollRef.current) clearInterval(activationPollRef.current);
+    };
+  }, []);
 
   // Fetch payment configuration directly
   useEffect(() => {
@@ -96,8 +146,9 @@ const PaymentPage = () => {
           },
           callback: function (response) {
             setIsProcessing(true);
+            const ref = response.reference || txRef;
             api.post("/payment/verify", {
-              reference: response.reference || txRef,
+              reference: ref,
               trxref: response.trxref || txRef,
             })
               .then((verifyRes) => {
@@ -108,18 +159,28 @@ const PaymentPage = () => {
                     navigate("/dashboard");
                   }, 2000);
                 } else {
-                  setErrorMessage("Payment verification failed. Please contact support.");
+                  // Verification didn't confirm yet — start polling as fallback
+                  setSuccessMessage("Payment received! Confirming your access...");
+                  startActivationPoll(ref);
                 }
               })
-              .catch((vErr) => {
-                setErrorMessage(vErr.response?.data?.message || "Verification failed.");
+              .catch(() => {
+                // Network/server error — start polling as fallback so webhook can activate
+                setSuccessMessage("Payment received! Confirming your access...");
+                startActivationPoll(ref);
               })
               .finally(() => {
-                setIsProcessing(false);
+                // Don't clear processing — poll will clear it when done
               });
           },
           onClose: function () {
-            setIsProcessing(false);
+            // If popup closed without callback (mobile redirect, network drop),
+            // start polling in case Paystack webhook already activated the account
+            if (!successMessage) {
+              setSuccessMessage("Checking payment status...");
+              setIsProcessing(true);
+              startActivationPoll(txRef);
+            }
           },
         });
 
