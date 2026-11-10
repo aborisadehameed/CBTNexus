@@ -196,15 +196,17 @@ connectDB()
   .then(loadPersistedPeak)
   .then(async () => {
     try {
-      // Auto-activate pending manual user if exists
-      const targetEmail = "rhomesandproperty@gmail.com";
-      const pendingUser = await User.findOne({ email: targetEmail });
-      if (pendingUser && !pendingUser.isPaid) {
-        pendingUser.isPaid = true;
-        pendingUser.paidAt = pendingUser.paidAt || new Date();
-        pendingUser.paymentReference = pendingUser.paymentReference || "MANUAL_ACTIVATION_RECOVERY";
-        await pendingUser.save();
-        console.log(`✅ [Startup] Automatically activated lifetime access for ${targetEmail}`);
+      // Auto-activate pending manual users if they exist
+      const targetEmails = ["rhomesandproperty@gmail.com", "aborisadehameedat@gmail.com"];
+      for (const email of targetEmails) {
+        const pendingUser = await User.findOne({ email: email.toLowerCase().trim() });
+        if (pendingUser && !pendingUser.isPaid) {
+          pendingUser.isPaid = true;
+          pendingUser.paidAt = pendingUser.paidAt || new Date();
+          pendingUser.paymentReference = pendingUser.paymentReference || "MANUAL_ACTIVATION_RECOVERY";
+          await pendingUser.save();
+          console.log(`✅ [Startup] Automatically activated lifetime access for ${email}`);
+        }
       }
     } catch (actErr) {
       console.warn("⚠️  [Startup] Note on auto-activation:", actErr.message);
