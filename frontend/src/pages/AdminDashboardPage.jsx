@@ -2,9 +2,9 @@ import React, { useState, useEffect, useContext, useRef, useCallback } from "rea
 import { useNavigate } from "react-router-dom";
 import { AuthContext, api } from "../context/AuthContext";
 
-const WS_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api")
-  .replace(/^http/, "ws")
-  .replace("/api", "");
+const rawApiUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/$/, "");
+const BASE_URL = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`;
+const WS_URL = BASE_URL.replace(/^https/, "wss").replace(/^http/, "ws").replace(/\/api$/, "");
 
 // Animated count hook — animates FROM current value TO new target (no zero-reset)
 function useCountUp(target, duration = 600) {
@@ -171,14 +171,14 @@ export default function AdminDashboardPage() {
   const displayOnline = useCountUp(stats.onlineCount, 800);
   const displayTotal = useCountUp(stats.totalUsers, 1200);
   const displayToday = useCountUp(stats.todayRegistrations, 800);
-  const displayPeak  = useCountUp(stats.peakOnlineCount, 600);
+  const displayPeak = useCountUp(stats.peakOnlineCount, 600);
 
   const cards = [
     {
       id: "online",
       label: "Currently Online",
       value: displayOnline,
-      rawValue: stats.onlineCount,  
+      rawValue: stats.onlineCount,
       color: "#22c55e",
       gradient: "linear-gradient(135deg, #052e16 0%, #14532d 100%)",
       border: "rgba(34,197,94,0.4)",
@@ -389,8 +389,8 @@ export default function AdminDashboardPage() {
               <div className="adm-card-footer">
                 <span className="adm-card-trend">
                   {card.id === "online" ? "Updates via WebSocket" :
-                   card.id === "today"  ? "Resets at midnight UTC" :
-                                          "Since app launch"}
+                    card.id === "today" ? "Resets at midnight UTC" :
+                      "Since app launch"}
                 </span>
                 {card.history && <Sparkline data={card.history} color={card.color} />}
               </div>
@@ -428,7 +428,8 @@ export default function AdminDashboardPage() {
                 }
               }}
             >
-              ⚡ Instant User Activation
+              Instant User Activation
+              Instant User Activation
             </button>
           </div>
           <button className="adm-btn" onClick={fetchStats}>

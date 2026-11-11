@@ -469,3 +469,140 @@ button {
 .action-card p {
   color: hsl(var(--text-muted));
 }
+
+/* ============================================================
+   Enhanced Polish, Glassmorphism, Micro-interactions & Animations
+   ============================================================ */
+
+/* Global smooth animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(47, 158, 157, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(118, 199, 192, 0.45);
+  }
+}
+
+@keyframes subtleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Page containers fade in smoothly */
+.dashboard-wrapper,
+.leaderboard-page-container,
+.payment-wrapper,
+.admin-feedback-page,
+.adm-page,
+.profile-page,
+.newsfeed-container,
+.results-page-container,
+.corrections-container,
+.games-page-container {
+  animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Enhanced Glassmorphic Cards & Elevated Surfaces */
+.glass-card,
+.card,
+.stat-card,
+.action-card,
+.exam-card,
+.admin-wrapper {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.25s ease !important;
+}
+
+.stat-card:hover,
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(47, 158, 157, 0.12), 0 2px 6px rgba(0,0,0,0.04) !important;
+  border-color: rgba(47, 158, 157, 0.4) !important;
+}
+
+/* Interactive Button Upgrades with Vibrant Gradients & Micro-bounce */
+button,
+.btn-dashboard-primary,
+.btn-dashboard-secondary,
+.btn-nav-primary,
+.custom-btn,
+.btn-auth-submit,
+.btn-exam-submit,
+.adm-btn {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease,
+              background 0.2s ease,
+              filter 0.2s ease !important;
+}
+
+button:active,
+.btn-dashboard-primary:active,
+.btn-dashboard-secondary:active,
+.btn-nav-primary:active,
+.adm-btn:active {
+  transform: scale(0.97) !important;
+}
+
+.btn-dashboard-primary:hover,
+.custom-btn:hover,
+.btn-auth-submit:hover,
+.btn-exam-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(47, 158, 157, 0.4) !important;
+}
+
+/* Smooth Input Focus State */
+input, textarea, select {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 4px rgba(47, 158, 157, 0.18) !important;
+}
+
+/* Option Buttons in Exam */
+.option-btn {
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+.option-btn:hover {
+  transform: translateX(4px);
+  border-color: var(--color-primary) !important;
+}
+
+.option-btn.selected {
+  transform: translateX(6px);
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 4px 16px rgba(47, 158, 157, 0.22) !important;
+}
+
+/* Beautiful custom modern scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(47, 158, 157, 0.25);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(47, 158, 157, 0.5);
+}

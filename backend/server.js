@@ -94,7 +94,11 @@ wss.on("connection", (ws) => {
 
         if (ws._userId) {
           onlineUsers.set(ws._userId, ws);
-          broadcastOnlineCount();
+        }
+        // Always broadcast and send immediate stats back to this socket
+        broadcastOnlineCount();
+        if (ws._isAdmin && ws.readyState === 1) {
+          ws.send(JSON.stringify({ type: "ONLINE_COUNT", count: onlineUsers.size, peak: peakOnlineCount }));
         }
       }
     } catch (e) {
