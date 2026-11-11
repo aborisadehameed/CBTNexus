@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e3a3a"/>
+      <stop offset="60%" stop-color="#1d6666"/>
+      <stop offset="100%" stop-color="#2F9E9D"/>
+    </linearGradient>
+    
+    <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f0fdfc"/>
+    </linearGradient>
+
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2F9E9D"/>
+      <stop offset="100%" stop-color="#76C7C0"/>
+    </linearGradient>
+
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+
+    <filter id="cardShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000" flood-opacity="0.18"/>
+    </filter>
+
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="600" height="450" rx="28" fill="url(#bgGrad)"/>
+
+  <!-- Decorative circles / ambient glow -->
+  <circle cx="90" cy="80" r="110" fill="#76C7C0" opacity="0.15" filter="url(#softGlow)"/>
+  <circle cx="530" cy="380" r="130" fill="#2F9E9D" opacity="0.25" filter="url(#softGlow)"/>
+  <circle cx="480" cy="90" r="50" fill="#fde047" opacity="0.12"/>
+
+  <!-- Subtle grid pattern -->
+  <g stroke="#ffffff" stroke-width="0.75" opacity="0.08">
+    <line x1="60" y1="0" x2="60" y2="450"/>
+    <line x1="160" y1="0" x2="160" y2="450"/>
+    <line x1="260" y1="0" x2="260" y2="450"/>
+    <line x1="360" y1="0" x2="360" y2="450"/>
+    <line x1="460" y1="0" x2="460" y2="450"/>
+    <line x1="560" y1="0" x2="560" y2="450"/>
+    <line x1="0" y1="75" x2="600" y2="75"/>
+    <line x1="0" y1="175" x2="600" y2="175"/>
+    <line x1="0" y1="275" x2="600" y2="275"/>
+    <line x1="0" y1="375" x2="600" y2="375"/>
+  </g>
+
+  <!-- Main CBT Computer / Tablet Screen -->
+  <g filter="url(#cardShadow)">
+    <!-- Monitor Base & Stand -->
+    <path d="M 270 345 L 330 345 L 340 375 L 260 375 Z" fill="#134e4d"/>
+    <rect x="230" y="375" width="140" height="10" rx="5" fill="#0f3d3c"/>
+
+    <!-- Screen frame -->
+    <rect x="110" y="70" width="380" height="275" rx="18" fill="#0a2524" stroke="#2F9E9D" stroke-width="2"/>
+    <rect x="122" y="82" width="356" height="251" rx="12" fill="url(#screenGrad)"/>
+
+    <!-- Screen Header Bar (CBT Exam Navbar) -->
+    <rect x="122" y="82" width="356" height="42" rx="12" fill="#1a6060"/>
+    <!-- Top inner corners straight -->
+    <rect x="122" y="112" width="356" height="12" fill="#1a6060"/>
+    
+    <!-- Logo dot & text in header -->
+    <circle cx="142" cy="103" r="7" fill="#76C7C0"/>
+    <rect x="156" y="99" width="70" height="8" rx="4" fill="#ffffff"/>
+    
+    <!-- Timer badge inside screen -->
+    <rect x="365" y="93" width="95" height="20" rx="10" fill="rgba(255,255,255,0.18)"/>
+    <circle cx="377" cy="103" r="4" fill="#fde047"/>
+    <rect x="388" y="100" width="60" height="6" rx="3" fill="#ffffff"/>
+
+    <!-- Subject pills inside test -->
+    <rect x="142" y="140" width="65" height="18" rx="9" fill="#2F9E9D"/>
+    <rect x="152" y="146" width="45" height="6" rx="3" fill="#ffffff"/>
+    <rect x="215" y="140" width="60" height="18" rx="9" fill="#e2f7f6"/>
+    <rect x="225" y="146" width="40" height="6" rx="3" fill="#64748b"/>
+    <rect x="283" y="140" width="60" height="18" rx="9" fill="#e2f7f6"/>
+    <rect x="293" y="146" width="40" height="6" rx="3" fill="#64748b"/>
+
+    <!-- Question block -->
+    <rect x="142" y="174" width="280" height="9" rx="4.5" fill="#1a1a2e"/>
+    <rect x="142" y="190" width="220" height="8" rx="4" fill="#64748b"/>
+
+    <!-- Option A (Selected) -->
+    <rect x="142" y="212" width="316" height="24" rx="7" fill="#e6f7f6" stroke="#2F9E9D" stroke-width="1.5"/>
+    <circle cx="158" cy="224" r="6" fill="#2F9E9D"/>
+    <rect x="174" y="221" width="160" height="6" rx="3" fill="#1a6060"/>
+
+    <!-- Option B -->
+    <rect x="142" y="244" width="316" height="24" rx="7" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+    <circle cx="158" cy="256" r="6" fill="#cbd5e1"/>
+    <rect x="174" y="253" width="180" height="6" rx="3" fill="#64748b"/>
+
+    <!-- Option C -->
+    <rect x="142" y="276" width="316" height="24" rx="7" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+    <circle cx="158" cy="288" r="6" fill="#cbd5e1"/>
+    <rect x="174" y="285" width="140" height="6" rx="3" fill="#64748b"/>
+
+    <!-- Bottom Buttons in Screen -->
+    <rect x="142" y="308" width="55" height="16" rx="5" fill="#e2e8f0"/>
+    <rect x="403" y="308" width="55" height="16" rx="5" fill="#2F9E9D"/>
+  </g>
+
+  <!-- Floating Achievement / Score Card (Top Right) -->
+  <g filter="url(#cardShadow)">
+    <rect x="420" y="45" width="150" height="75" rx="16" fill="#ffffff" stroke="#c5ebe9" stroke-width="1.5"/>
+    <circle cx="448" cy="82" r="16" fill="#e8faf9"/>
+    <text x="448" y="88" font-size="18" text-anchor="middle" font-family="sans-serif">🎯</text>
+    <text x="474" y="73" font-size="10" font-weight="bold" fill="#64748b" font-family="'Segoe UI', sans-serif">JAMB SCORE</text>
+    <text x="474" y="96" font-size="20" font-weight="900" fill="#2F9E9D" font-family="'Segoe UI', sans-serif">320<tspan font-size="11" font-weight="600" fill="#94a3b8">/400</tspan></text>
+  </g>
+
+  <!-- Floating Success Badge (Bottom Left) -->
+  <g filter="url(#cardShadow)">
+    <rect x="35" y="315" width="170" height="68" rx="16" fill="#ffffff" stroke="#c5ebe9" stroke-width="1.5"/>
+    <circle cx="65" cy="349" r="17" fill="url(#goldGrad)"/>
+    <!-- Trophy inside circle -->
+    <text x="65" y="356" font-size="18" text-anchor="middle" font-family="sans-serif">🏆</text>
+    <text x="92" y="342" font-size="11" font-weight="800" fill="#1a1a2e" font-family="'Segoe UI', sans-serif">Top 1% Rank</text>
+    <text x="92" y="359" font-size="9" font-weight="600" fill="#2F9E9D" font-family="'Segoe UI', sans-serif">Exam Ready · Verified</text>
+  </g>
+
+  <!-- Floating Speed Indicator (Top Left) -->
+  <g filter="url(#cardShadow)">
+    <rect x="45" y="115" width="110" height="42" rx="12" fill="#ffffff" opacity="0.95"/>
+    <circle cx="63" cy="136" r="10" fill="#e8faf9"/>
+    <text x="63" y="141" font-size="12" text-anchor="middle">⚡</text>
+    <text x="80" y="134" font-size="9" font-weight="bold" fill="#64748b" font-family="'Segoe UI', sans-serif">INSTANT</text>
+    <text x="80" y="146" font-size="11" font-weight="800" fill="#0d3b3b" font-family="'Segoe UI', sans-serif">Results</text>
+  </g>
+</svg>

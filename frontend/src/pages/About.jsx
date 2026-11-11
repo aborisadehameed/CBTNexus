@@ -1,90 +1,100 @@
 import React, { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 /* ─── tiny hook: fade-in elements as they scroll into view ─── */
 function useScrollReveal(selector) {
-  useEffect(() => {
-    const els = document.querySelectorAll(selector);
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("revealed");
-            io.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.12 }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, [selector]);
+    useEffect(() => {
+        const els = document.querySelectorAll(selector);
+        const io = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((e) => {
+                    if (e.isIntersecting) {
+                        e.target.classList.add("revealed");
+                        io.unobserve(e.target);
+                    }
+                });
+            },
+            { threshold: 0.12 }
+        );
+        els.forEach((el) => io.observe(el));
+        return () => io.disconnect();
+    }, [selector]);
 }
 
 const FEATURES = [
-  {
-    icon: "⏱️",
-    title: "Timed CBT Practice",
-    desc: "Simulate the real exam environment with countdown timers, automatic submission, and JAMB-style question navigation.",
-  },
-  {
-    icon: "📊",
-    title: "JAMB Score Engine",
-    desc: "Get your score calculated exactly as JAMB does — with per-subject breakdowns and overall aggregate calculation.",
-  },
-  {
-    icon: "🏆",
-    title: "Live Leaderboard",
-    desc: "See how you rank against thousands of other students in real-time. Compete, improve, and rise to the top.",
-  },
-  {
-    icon: "✅",
-    title: "Instant Corrections",
-    desc: "Review every question after each test — see the right answer, explanations, and track your weak areas over time.",
-  },
-  {
-    icon: "🎮",
-    title: "Learning Games",
-    desc: "Reinforce knowledge through interactive quiz games designed to make studying less of a chore and more of a thrill.",
-  },
-  {
-    icon: "📰",
-    title: "News & Updates",
-    desc: "Stay current with JAMB/WAEC/NECO announcements, syllabus changes, and exam-day tips from our curated news feed.",
-  },
+    {
+        title: "Timed CBT Practice",
+        desc: "Simulate the real exam environment with countdown timers, automatic submission, and JAMB-style question navigation.",
+    },
+    {
+        title: "JAMB Score Engine",
+        desc: "Get your score calculated exactly as JAMB does — with per-subject breakdowns and overall aggregate calculation.",
+    },
+    {
+        title: "Live Leaderboard",
+        desc: "See how you rank against thousands of other students in real-time. Compete, improve, and rise to the top.",
+    },
+    {
+        title: "Instant Corrections",
+        desc: "Review every question after each test — see the right answer, explanations, and track your weak areas over time.",
+    },
+    {
+        title: "Learning Games",
+        desc: "Reinforce knowledge through interactive quiz games designed to make studying less of a chore and more of a thrill.",
+    },
+    {
+        title: "News & Updates",
+        desc: "Stay current with JAMB/WAEC/NECO announcements, syllabus changes, and exam-day tips from our curated news feed.",
+    },
 ];
 
 const STATS = [
-  { value: "1,000+", label: "Practice Questions" },
-  { value: "3", label: "Exams Supported (JAMB · WAEC · NECO)" },
-  { value: "₦3,000", label: "One-Time Lifetime Access" },
-  { value: "24/7", label: "Available Anytime, Anywhere" },
+    { value: "10,000+", label: "Practice Questions" },
+    { value: "3", label: "Exams Supported (JAMB · WAEC · NECO)" },
+    { value: "₦3,000", label: "One-Time Lifetime Access" },
+    { value: "24/7", label: "Available Anytime, Anywhere" },
 ];
 
 const STEPS = [
-  {
-    num: "01",
-    title: "Create Your Account",
-    desc: "Sign up in seconds with just your name and email. No complicated forms, no hidden fees.",
-  },
-  {
-    num: "02",
-    title: "Pay Once, Access Forever",
-    desc: "A one-time payment of ₦3,000 unlocks unlimited CBT practice for all subjects and exam types — for life.",
-  },
-  {
-    num: "03",
-    title: "Practice & Excel",
-    desc: "Take timed tests, review corrections, climb the leaderboard, and walk into exam halls with total confidence.",
-  },
+    {
+        num: "01",
+        title: "Create Your Account",
+        desc: "Sign up in seconds with just your name and email. No complicated forms, no hidden fees.",
+    },
+    {
+        num: "02",
+        title: "Pay Once, Access Forever",
+        desc: "A one-time payment of ₦3,000 unlocks unlimited CBT practice for all subjects and exam types — for life.",
+    },
+    {
+        num: "03",
+        title: "Practice & Excel",
+        desc: "Take timed tests, review corrections, climb the leaderboard, and walk into exam halls with total confidence.",
+    },
 ];
 
 const About = () => {
-  useScrollReveal(".reveal");
+    useScrollReveal(".reveal");
+    const contactRef = useRef(null);
+    const location = useLocation();
 
-  return (
-    <>
-      <style>{`
+    const scrollToContact = (e) => {
+        if (e) e.preventDefault();
+        contactRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    useEffect(() => {
+        if (location.hash === "#contact" || location.hash === "#contact-section" || location.pathname === "/contact") {
+            const timer = setTimeout(() => {
+                contactRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 150);
+            return () => clearTimeout(timer);
+        }
+    }, [location]);
+
+    return (
+        <>
+            <style>{`
         /* ── Reset & base ── */
         .about-page {
           font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
@@ -280,21 +290,40 @@ const About = () => {
         .mission-wrap {
           background: linear-gradient(135deg, #e8faf9 0%, #f0fffe 100%);
           border-radius: 24px;
-          padding: 4rem 2.5rem;
+          padding: 3.5rem 2.5rem;
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 3rem;
           align-items: center;
           border: 1px solid #c5ebe9;
         }
-        @media (max-width: 700px) {
-          .mission-wrap { grid-template-columns: 1fr; padding: 2.5rem 1.5rem; }
+        @media (max-width: 820px) {
+          .mission-wrap { grid-template-columns: 1fr; padding: 2.2rem 1.4rem; gap: 2rem; }
         }
-        .mission-icon-wrap {
-          font-size: 5rem;
-          line-height: 1;
-          text-align: center;
-          animation: subtleFloat 5s ease-in-out infinite;
+        .mission-image-col {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+        }
+        .mission-img-wrap {
+          width: 100%;
+          max-width: 480px;
+          border-radius: 20px;
+          overflow: hidden;
+          box-shadow: 0 16px 36px rgba(47, 158, 157, 0.18);
+          border: 3px solid #ffffff;
+          background: #0e3a3a;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .mission-img-wrap:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 22px 48px rgba(47, 158, 157, 0.26);
+        }
+        .mission-img {
+          width: 100%;
+          height: auto;
+          display: block;
         }
         .mission-text h2 {
           font-size: 1.9rem;
@@ -587,203 +616,213 @@ const About = () => {
         }
       `}</style>
 
-      <div className="about-page">
+            <div className="about-page">
 
-        {/* ══ HERO ══ */}
-        <section className="about-hero">
-          <div className="hero-blob hero-blob-1" />
-          <div className="hero-blob hero-blob-2" />
-          <div style={{ position: "relative", zIndex: 1 }}>
-            <div className="hero-badge">🇳🇬 Built for Nigerian Students</div>
-            <h1 className="hero-title">
-              Your Shortcut to <span>Exam Success</span>
-            </h1>
-            <p className="hero-sub">
-              CBT Nexus is Nigeria's dedicated Computer Based Testing platform —
-              helping students ace JAMB, WAEC, and NECO with realistic timed
-              practice, instant corrections, and live leaderboards.
-            </p>
-            <div className="hero-actions">
-              <Link to="/register" className="btn-hero-primary">
-                Get Started Free 🚀
-              </Link>
-              <Link to="/contact" className="btn-hero-outline">
-                Contact Us
-              </Link>
-            </div>
-          </div>
-          <div className="hero-scroll-hint">
-            <span>Scroll</span>
-            <div className="scroll-arrow" />
-          </div>
-        </section>
+                {/* ══ HERO ══ */}
+                <section className="about-hero">
+                    <div className="hero-blob hero-blob-1" />
+                    <div className="hero-blob hero-blob-2" />
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                        <div className="hero-badge">Built for Nigerian Students</div>
+                        <h1 className="hero-title">
+                            Your Shortcut to <span>Exam Success</span>
+                        </h1>
+                        <p className="hero-sub">
+                            CBT Nexus is Nigeria's dedicated Computer Based Testing platform —
+                            helping students ace JAMB, WAEC, and NECO with realistic timed
+                            practice, instant corrections, and live leaderboards.
+                        </p>
+                        <div className="hero-actions">
+                            <Link to="/register" className="btn-hero-primary">
+                                Get Started Free
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={scrollToContact}
+                                className="btn-hero-outline"
+                                aria-label="Scroll to contact information"
+                            >
+                                Contact Us
+                            </button>
+                        </div>
+                    </div>
+                    <div className="hero-scroll-hint">
+                        <span>Scroll</span>
+                        <div className="scroll-arrow" />
+                    </div>
+                </section>
 
-        {/* ══ MISSION ══ */}
-        <section className="about-section">
-          <div className="mission-wrap reveal">
-            <div className="mission-icon-wrap">🎯</div>
-            <div className="mission-text">
-              <p className="section-label">Our Mission</p>
-              <h2>Democratising Exam Preparation in Nigeria</h2>
-              <p>
-                Every year, millions of Nigerian students sit for JAMB, WAEC, and
-                NECO. Many fail — not for lack of intelligence, but for lack of
-                access to quality, affordable practice tools. CBT Nexus changes that.
-              </p>
-              <p>
-                We built a platform that is fast, mobile-friendly, and costs less than
-                a plate of rice — a single one-time payment that unlocks unlimited
-                practice forever. No subscription traps. No expiry dates.
-              </p>
-              <div style={{ marginTop: "1.2rem" }}>
-                <span className="mission-pill">📚 JAMB</span>
-                <span className="mission-pill">📝 WAEC</span>
-                <span className="mission-pill">🎓 NECO</span>
-                <span className="mission-pill">💡 Practicals</span>
-              </div>
-            </div>
-          </div>
-        </section>
+                {/* ══ MISSION ══ */}
+                <section className="about-section">
+                    <div className="mission-wrap reveal">
+                        <div className="mission-image-col">
+                            <div className="mission-img-wrap">
+                                <img
+                                    src="/mission-cbt.svg"
+                                    alt="CBT Nexus Exam Practice Platform"
+                                    className="mission-img"
+                                    loading="lazy"
+                                />
+                            </div>
+                        </div>
+                        <div className="mission-text">
+                            <p className="section-label">Our Mission</p>
+                            <h2>Democratising Exam Preparation in Nigeria</h2>
+                            <p>
+                                Every year, millions of Nigerian students sit for JAMB, WAEC, and
+                                NECO. Many fail — not for lack of intelligence, but for lack of
+                                access to quality, affordable practice tools. CBT Nexus changes that.
+                            </p>
+                            <p>
+                                We built a platform that is fast, mobile-friendly, and costs less than
+                                a plate of rice — a single one-time payment that unlocks unlimited
+                                practice forever. No subscription traps. No expiry dates.
+                            </p>
+                            <div style={{ marginTop: "1.2rem" }}>
+                                <span className="mission-pill">JAMB</span>
+                                <span className="mission-pill">WAEC</span>
+                                <span className="mission-pill">NECO</span>
+                                <span className="mission-pill">Practicals</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-        {/* ══ STATS ══ */}
-        <section style={{ padding: "0 1.5rem 5rem", maxWidth: "1100px", margin: "0 auto" }}>
-          <div className="stats-band reveal">
-            {STATS.map((s, i) => (
-              <div key={i} className="stat-item">
-                <div className="stat-value">{s.value}</div>
-                <div className="stat-label">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+                {/* ══ STATS ══ */}
+                <section style={{ padding: "0 1.5rem 5rem", maxWidth: "1100px", margin: "0 auto" }}>
+                    <div className="stats-band reveal">
+                        {STATS.map((s, i) => (
+                            <div key={i} className="stat-item">
+                                <div className="stat-value">{s.value}</div>
+                                <div className="stat-label">{s.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
 
-        {/* ══ FEATURES ══ */}
-        <section className="about-section" style={{ paddingTop: "1rem" }}>
-          <div className="reveal">
-            <p className="section-label">What You Get</p>
-            <h2 className="section-title">Everything You Need to Pass</h2>
-            <p className="section-desc">
-              CBT Nexus isn't just a question bank. It's a complete exam-prep
-              ecosystem engineered around how Nigerian exams actually work.
-            </p>
-          </div>
-          <div className="features-grid">
-            {FEATURES.map((f, i) => (
-              <div
-                key={i}
-                className={`feature-card reveal reveal-delay-${(i % 6) + 1}`}
-              >
-                <span className="feature-icon">{f.icon}</span>
-                <h3 className="feature-title">{f.title}</h3>
-                <p className="feature-desc">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+                {/* ══ FEATURES ══ */}
+                <section className="about-section" style={{ paddingTop: "1rem" }}>
+                    <div className="reveal">
+                        <p className="section-label">What You Get</p>
+                        <h2 className="section-title">Everything You Need to Pass</h2>
+                        <p className="section-desc">
+                            CBT Nexus isn't just a question bank. It's a complete exam-prep
+                            ecosystem engineered around how Nigerian exams actually work.
+                        </p>
+                    </div>
+                    <div className="features-grid">
+                        {FEATURES.map((f, i) => (
+                            <div
+                                key={i}
+                                className={`feature-card reveal reveal-delay-${(i % 6) + 1}`}
+                            >
+                                <span className="feature-icon">{f.icon}</span>
+                                <h3 className="feature-title">{f.title}</h3>
+                                <p className="feature-desc">{f.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
 
-        {/* ══ HOW IT WORKS ══ */}
-        <section
-          className="about-section"
-          style={{ background: "linear-gradient(180deg, #f8fdfd 0%, #eaf9f8 100%)" , maxWidth: "100%", padding: "5rem 1.5rem" }}
-        >
-          <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-            <div className="reveal" style={{ textAlign: "center", marginBottom: "3rem" }}>
-              <p className="section-label">How It Works</p>
-              <h2 className="section-title">Three Steps to Exam Confidence</h2>
-            </div>
-            <div className="steps-wrap">
-              {STEPS.map((s, i) => (
-                <div key={i} className={`step-card reveal reveal-delay-${i + 1}`}>
-                  <span className="step-num">{s.num}</span>
-                  <span className="step-badge">Step {s.num}</span>
-                  <h3 className="step-title">{s.title}</h3>
-                  <p className="step-desc">{s.desc}</p>
+                {/* ══ HOW IT WORKS ══ */}
+                <section
+                    className="about-section"
+                    style={{ background: "linear-gradient(180deg, #f8fdfd 0%, #eaf9f8 100%)", maxWidth: "100%", padding: "5rem 1.5rem" }}
+                >
+                    <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+                        <div className="reveal" style={{ textAlign: "center", marginBottom: "3rem" }}>
+                            <p className="section-label">How It Works</p>
+                            <h2 className="section-title">Three Steps to Exam Confidence</h2>
+                        </div>
+                        <div className="steps-wrap">
+                            {STEPS.map((s, i) => (
+                                <div key={i} className={`step-card reveal reveal-delay-${i + 1}`}>
+                                    <span className="step-num">{s.num}</span>
+                                    <span className="step-badge">Step {s.num}</span>
+                                    <h3 className="step-title">{s.title}</h3>
+                                    <p className="step-desc">{s.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ══ CONTACT / LOCATION ══ */}
+                <section id="contact" ref={contactRef} className="about-section" style={{ scrollMarginTop: "2rem" }}>
+                    <div className="reveal">
+                        <p className="section-label">Find Us</p>
+                        <h2 className="section-title">Get In Touch</h2>
+                        <p className="section-desc">
+                            Have a question, suggestion, or running into an issue? Reach out —
+                            we respond fast and genuinely care about every student on this platform.
+                        </p>
+                    </div>
+                    <div className="contact-grid">
+                        <div className="contact-card reveal reveal-delay-1">
+                            <div>
+                                <div className="contact-card-label">Office Address</div>
+                                <div className="contact-card-value">
+                                    Suite 8, 2nd Floor, N.U.T Building
+                                </div>
+                                <div className="contact-card-sub">
+                                    Off Olaogun Junction, Old Ife Road, Ibadan, Oyo State
+                                </div>
+                            </div>
+                        </div>
+                        <div className="contact-card reveal reveal-delay-2">
+                            <div>
+                                <div className="contact-card-label">Phone</div>
+                                <div className="contact-card-value">08032249468</div>
+                                <div className="contact-card-sub">Mon – Sat, 8 AM – 6 PM WAT</div>
+                            </div>
+                        </div>
+                        <div className="contact-card reveal reveal-delay-3">
+                            <div>
+                                <div className="contact-card-label">In-App Support</div>
+                                <div className="contact-card-value">Feedback Page</div>
+                                <div className="contact-card-sub">
+                                    Send a message and an admin replies directly — usually within hours.
+                                </div>
+                            </div>
+                        </div>
+                        <div className="contact-card reveal reveal-delay-4">
+                            <div>
+                                <div className="contact-card-label">Lifetime Access</div>
+                                <div className="contact-card-value">₦3,000 — Pay Once</div>
+                                <div className="contact-card-sub">
+                                    Secure payment via Paystack. Access never expires.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ══ CTA ══ */}
+                <div className="cta-section reveal">
+                    <h2 className="cta-title">Ready to Start Winning?</h2>
+                    <p className="cta-sub">
+                        Join thousands of Nigerian students already practising smarter on CBT Nexus.
+                        One payment. Lifetime access. Unlimited potential.
+                    </p>
+                    <div className="cta-buttons">
+                        <Link to="/register" className="btn-cta-white">
+                            Create Free Account
+                        </Link>
+                        <Link to="/payment" className="btn-cta-outline">
+                            View Pricing — ₦3,000
+                        </Link>
+                    </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
-        {/* ══ CONTACT / LOCATION ══ */}
-        <section className="about-section">
-          <div className="reveal">
-            <p className="section-label">Find Us</p>
-            <h2 className="section-title">Get In Touch</h2>
-            <p className="section-desc">
-              Have a question, suggestion, or running into an issue? Reach out —
-              we respond fast and genuinely care about every student on this platform.
-            </p>
-          </div>
-          <div className="contact-grid">
-            <div className="contact-card reveal reveal-delay-1">
-              <span className="contact-card-icon">📍</span>
-              <div>
-                <div className="contact-card-label">Office Address</div>
-                <div className="contact-card-value">
-                  Suite 8, 2nd Floor, N.U.T Building
+                <div className="about-footer-note">
+                    © {new Date().getFullYear()} CBT Nexus · Suite 8, N.U.T Building, Ibadan ·{" "}
+                    <Link to="/privacy" style={{ color: "#2F9E9D" }}>Privacy Policy</Link>{" "}
+                    ·{" "}
+                    <Link to="/terms" style={{ color: "#2F9E9D" }}>Terms of Use</Link>
                 </div>
-                <div className="contact-card-sub">
-                  Off Olaogun Junction, Old Ife Road, Ibadan, Oyo State
-                </div>
-              </div>
             </div>
-            <div className="contact-card reveal reveal-delay-2">
-              <span className="contact-card-icon">📞</span>
-              <div>
-                <div className="contact-card-label">Phone</div>
-                <div className="contact-card-value">08032249468</div>
-                <div className="contact-card-sub">Mon – Sat, 8 AM – 6 PM WAT</div>
-              </div>
-            </div>
-            <div className="contact-card reveal reveal-delay-3">
-              <span className="contact-card-icon">💬</span>
-              <div>
-                <div className="contact-card-label">In-App Support</div>
-                <div className="contact-card-value">Feedback Page</div>
-                <div className="contact-card-sub">
-                  Send a message and an admin replies directly — usually within hours.
-                </div>
-              </div>
-            </div>
-            <div className="contact-card reveal reveal-delay-4">
-              <span className="contact-card-icon">💳</span>
-              <div>
-                <div className="contact-card-label">Lifetime Access</div>
-                <div className="contact-card-value">₦3,000 — Pay Once</div>
-                <div className="contact-card-sub">
-                  Secure payment via Paystack. Access never expires.
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ══ CTA ══ */}
-        <div className="cta-section reveal">
-          <h2 className="cta-title">Ready to Start Winning?</h2>
-          <p className="cta-sub">
-            Join thousands of Nigerian students already practising smarter on CBT Nexus.
-            One payment. Lifetime access. Unlimited potential.
-          </p>
-          <div className="cta-buttons">
-            <Link to="/register" className="btn-cta-white">
-              Create Free Account
-            </Link>
-            <Link to="/payment" className="btn-cta-outline">
-              View Pricing — ₦3,000
-            </Link>
-          </div>
-        </div>
-
-        <div className="about-footer-note">
-          © {new Date().getFullYear()} CBT Nexus · Suite 8, N.U.T Building, Ibadan ·{" "}
-          <Link to="/privacy" style={{ color: "#2F9E9D" }}>Privacy Policy</Link>{" "}
-          ·{" "}
-          <Link to="/terms" style={{ color: "#2F9E9D" }}>Terms of Use</Link>
-        </div>
-      </div>
-    </>
-  );
+        </>
+    );
 };
 
 export default About;
