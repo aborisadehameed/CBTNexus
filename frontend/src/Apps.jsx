@@ -25,6 +25,8 @@ const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
 const TermsOfUsePage = lazy(() => import("./pages/TermsOfUsePage"));
+const ContactPage = lazy(() => import("./pages/About"));
+const AboutPage = lazy(() => import("./pages/About"));
 
 // Lightweight fallback loader with minimal CPU overhead
 const PageLoader = () => (
@@ -77,6 +79,8 @@ function App() {
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/terms" element={<TermsOfUsePage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/about" element={<AboutPage />} />
           </Routes>
         </Suspense>
       </Router>

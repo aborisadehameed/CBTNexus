@@ -96,6 +96,12 @@ const Navbar = () => {
               >
                 Feedback
               </Link>
+              <Link
+                to="/about"
+                className={`nav-item ${isActive("/about") ? "active" : ""}`}
+              >
+                About
+              </Link>
 
               {user.role === "admin" && (
                 <Link
@@ -150,6 +156,12 @@ const Navbar = () => {
 
             ) : (
               <>
+                <Link
+                  to="/about"
+                  className={`nav-item ${isActive("/about") ? "active" : ""}`}
+                >
+                  About
+                </Link>
                 {location.pathname !== "/register" ? (
                   <Link to="/register" className="btn-nav-primary">
                     Sign Up
