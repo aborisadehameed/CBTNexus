@@ -772,7 +772,7 @@ const About = () => {
                         <div className="contact-card reveal reveal-delay-2">
                             <div>
                                 <div className="contact-card-label">Phone</div>
-                                <div className="contact-card-value">08032249468</div>
+                                <div className="contact-card-value">+2348032249468</div>
                                 <div className="contact-card-sub">Mon – Sat, 8 AM – 6 PM WAT</div>
                             </div>
                         </div>
