@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
+import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext, api } from "../context/AuthContext";
 import "../custom-theme.css";

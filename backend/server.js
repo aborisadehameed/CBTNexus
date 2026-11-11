@@ -157,7 +157,7 @@ app.use(cors({
     if (!origin) {
       return callback(null, true);
     }
-    
+
     const cleanOrigin = origin.replace(/\/$/, "");
     const isAllowed = allowedOrigins.includes(cleanOrigin) ||
       cleanOrigin.endsWith(".vercel.app") ||
@@ -205,16 +205,16 @@ connectDB()
           pendingUser.paidAt = pendingUser.paidAt || new Date();
           pendingUser.paymentReference = pendingUser.paymentReference || "MANUAL_ACTIVATION_RECOVERY";
           await pendingUser.save();
-          console.log(`✅ [Startup] Automatically activated lifetime access for ${email}`);
+          console.log(`[Startup] Automatically activated lifetime access for ${email}`);
         }
       }
     } catch (actErr) {
-      console.warn("⚠️  [Startup] Note on auto-activation:", actErr.message);
+      console.warn("[Startup] Note on auto-activation:", actErr.message);
     }
   })
   .then(() => {
     server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch((err) => {
-    console.error("❌ Failed to initialize server:", err.message);
+    console.error("Failed to initialize server:", err.message);
   });

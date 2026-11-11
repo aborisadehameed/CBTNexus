@@ -208,7 +208,7 @@ const AdminFeedbackPage = () => {
         <div className="header-left">
           <Link to="/admin" className="back-link">← Back to Admin Console</Link>
           <h1 className="admin-title">
-             User Feedback & Support Inbox
+            User Feedback & Support Inbox
             {unreadCount > 0 && <span className="unread-counter">{unreadCount} New</span>}
           </h1>
           <p className="admin-subtitle">
@@ -264,9 +264,8 @@ const AdminFeedbackPage = () => {
                 return (
                   <div
                     key={item._id}
-                    className={`admin-ticket-item ${isSelected ? "selected" : ""} ${
-                      item.unreadByAdmin ? "ticket-unread" : ""
-                    }`}
+                    className={`admin-ticket-item ${isSelected ? "selected" : ""} ${item.unreadByAdmin ? "ticket-unread" : ""
+                      }`}
                     onClick={() => handleSelectFeedback(item)}
                   >
                     <div className="ticket-item-top">
