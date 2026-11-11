@@ -602,8 +602,9 @@ const QuestionsPage = () => {
           },
           callback: function (response) {
             setIsPaying(true);
+            const ref = response.reference || txRef;
             api.post("/payment/verify", {
-              reference: response.reference || txRef,
+              reference: ref,
               trxref: response.trxref || txRef,
             })
               .then((verifyRes) => {
@@ -611,17 +612,40 @@ const QuestionsPage = () => {
                   updateUser({ isPaid: true, paidAt: new Date() });
                   setShowPaywallModal(false);
                 } else {
-                  setPayError(verifyRes.data?.message || "Payment verification failed.");
+                  // Fallback verification check
+                  api.get("/payment/status").then(sRes => {
+                    if (sRes.data?.isPaid) {
+                      updateUser({ isPaid: true, paidAt: sRes.data.paidAt || new Date() });
+                      setShowPaywallModal(false);
+                    } else {
+                      setPayError(verifyRes.data?.message || "Payment verification in progress. Please refresh.");
+                    }
+                  });
                 }
               })
-              .catch((vErr) => {
-                setPayError(vErr.response?.data?.message || "Failed to verify transaction.");
+              .catch(() => {
+                // Network glitch or delay — check status endpoint
+                api.get("/payment/status").then(sRes => {
+                  if (sRes.data?.isPaid) {
+                    updateUser({ isPaid: true, paidAt: sRes.data.paidAt || new Date() });
+                    setShowPaywallModal(false);
+                  } else {
+                    setPayError("Verification is processing. Refreshing your status...");
+                  }
+                });
               })
               .finally(() => {
                 setIsPaying(false);
               });
           },
           onClose: function () {
+            // Check if payment was confirmed via webhook or bank transfer while popup was open
+            api.get("/payment/status").then(sRes => {
+              if (sRes.data?.isPaid) {
+                updateUser({ isPaid: true, paidAt: sRes.data.paidAt || new Date() });
+                setShowPaywallModal(false);
+              }
+            }).catch(() => {});
             setIsPaying(false);
           },
         });

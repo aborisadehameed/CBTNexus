@@ -414,6 +414,22 @@ export default function AdminDashboardPage() {
             >
               Add New Question
             </button>
+            <button
+              className="adm-btn"
+              style={{ background: "rgba(34,197,94,0.2)", borderColor: "rgba(34,197,94,0.4)", color: "#4ade80" }}
+              onClick={async () => {
+                const email = prompt("Enter student's email to activate lifetime access:");
+                if (!email || !email.trim()) return;
+                try {
+                  const res = await api.post("/admin/activate-user", { email: email.trim() });
+                  alert(res.data?.message || `User ${email} successfully activated!`);
+                } catch (err) {
+                  alert(err.response?.data?.message || "Failed to activate user.");
+                }
+              }}
+            >
+              ⚡ Instant User Activation
+            </button>
           </div>
           <button className="adm-btn" onClick={fetchStats}>
             Refresh Stats
