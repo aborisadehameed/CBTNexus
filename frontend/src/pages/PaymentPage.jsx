@@ -12,6 +12,9 @@ const PaymentPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [showPendingModal, setShowPendingModal] = useState(false);
+  const [completedRef, setCompletedRef] = useState("");
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const activationPollRef = useRef(null);
 
   // After the Paystack popup closes (either via callback or user closing it),
@@ -27,9 +30,9 @@ const PaymentPage = () => {
         if (verifyRes.data?.success) {
           clearInterval(activationPollRef.current);
           updateUser({ isPaid: true, paidAt: new Date() });
+          setPaymentConfirmed(true);
           setSuccessMessage("Payment successful! You now have Lifetime Access.");
           setIsProcessing(false);
-          setTimeout(() => navigate("/dashboard"), 2000);
           return;
         }
       } catch {
@@ -41,9 +44,9 @@ const PaymentPage = () => {
         if (statusRes.data?.isPaid) {
           clearInterval(activationPollRef.current);
           updateUser({ isPaid: true, paidAt: statusRes.data.paidAt || new Date() });
+          setPaymentConfirmed(true);
           setSuccessMessage("Payment confirmed! You now have Lifetime Access.");
           setIsProcessing(false);
-          setTimeout(() => navigate("/dashboard"), 2000);
           return;
         }
       } catch { /* ignore */ }
@@ -51,7 +54,6 @@ const PaymentPage = () => {
       if (attempts >= MAX_ATTEMPTS) {
         clearInterval(activationPollRef.current);
         setIsProcessing(false);
-        setErrorMessage("Payment is taking longer than expected. If you were charged, your access will be activated within a few minutes. Contact support if it doesn't update.");
       }
     }, 5000);
   };
@@ -147,6 +149,9 @@ const PaymentPage = () => {
           callback: function (response) {
             setIsProcessing(true);
             const ref = response.reference || txRef;
+            setCompletedRef(ref);
+            setShowPendingModal(true);
+
             api.post("/payment/verify", {
               reference: ref,
               trxref: response.trxref || txRef,
@@ -154,31 +159,28 @@ const PaymentPage = () => {
               .then((verifyRes) => {
                 if (verifyRes.data?.success) {
                   updateUser({ isPaid: true, paidAt: new Date() });
-                  setSuccessMessage("Payment successful! You now have Lifetime Access.");
-                  setTimeout(() => {
-                    navigate("/dashboard");
-                  }, 2000);
+                  setPaymentConfirmed(true);
+                  setSuccessMessage("Payment verified successfully! Lifetime access unlocked.");
                 } else {
                   // Verification didn't confirm yet — start polling as fallback
-                  setSuccessMessage("Payment received! Confirming your access...");
+                  setSuccessMessage("Payment received! Confirming your access in the background...");
                   startActivationPoll(ref);
                 }
               })
               .catch(() => {
                 // Network/server error — start polling as fallback so webhook can activate
-                setSuccessMessage("Payment received! Confirming your access...");
+                setSuccessMessage("Payment received! Confirming your access in the background...");
                 startActivationPoll(ref);
               })
               .finally(() => {
-                // Don't clear processing — poll will clear it when done
+                setIsProcessing(false);
               });
           },
           onClose: function () {
-            // If popup closed without callback (mobile redirect, network drop),
-            // start polling in case Paystack webhook already activated the account
-            if (!successMessage) {
-              setSuccessMessage("Checking payment status...");
-              setIsProcessing(true);
+            // Check if payment was initiated or completed via redirect/bank transfer
+            if (!paymentConfirmed) {
+              setCompletedRef(txRef);
+              setShowPendingModal(true);
               startActivationPoll(txRef);
             }
           },
@@ -195,10 +197,10 @@ const PaymentPage = () => {
 
         if (verifyRes.data?.success) {
           updateUser({ isPaid: true, paidAt: new Date() });
+          setPaymentConfirmed(true);
+          setCompletedRef(txRef);
+          setShowPendingModal(true);
           setSuccessMessage("Sandbox/Test verification successful! Lifetime access granted.");
-          setTimeout(() => {
-            navigate("/dashboard");
-          }, 2000);
         } else {
           setErrorMessage("Mock payment failed to register.");
         }
@@ -436,6 +438,165 @@ const PaymentPage = () => {
           Payments securely processed via Paystack. Supports Cards, Bank Transfer, USSD, and Mobile Money.
         </div>
       </div>
+
+      {/* Post-Payment Notice Popup Modal (24 Hours Activation Notice) */}
+      {showPendingModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(10, 15, 30, 0.8)",
+            backdropFilter: "blur(6px)",
+            zIndex: 99999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+            animation: "fadeIn 0.25s ease",
+          }}
+        >
+          <div
+            className="glass-card"
+            style={{
+              width: "100%",
+              maxWidth: "480px",
+              background: "#ffffff",
+              border: "2px solid #2F9E9D",
+              borderRadius: "20px",
+              padding: "clamp(1.5rem, 4vw, 2.2rem)",
+              textAlign: "center",
+              boxShadow: "0 25px 60px rgba(0, 0, 0, 0.35)",
+              position: "relative",
+            }}
+          >
+            {/* Header Icon */}
+            <div
+              style={{
+                width: "70px",
+                height: "70px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, rgba(47, 158, 157, 0.15), rgba(245, 158, 11, 0.2))",
+                border: "2px solid #2F9E9D",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 1.2rem",
+                fontSize: "2.2rem",
+                boxShadow: "0 8px 24px rgba(47, 158, 157, 0.25)",
+              }}
+            >
+              ⏱️
+            </div>
+
+            <h2
+              style={{
+                fontSize: "1.45rem",
+                fontWeight: "800",
+                color: "#1a1a2e",
+                marginBottom: "0.4rem",
+              }}
+            >
+              Payment Completed
+            </h2>
+
+            <p style={{ color: "#64748b", fontSize: "0.92rem", marginBottom: "1.2rem", lineHeight: "1.5" }}>
+              Thank you! Your payment transaction has been processed.
+            </p>
+
+            {/* Prominent 24-Hour Notice Box */}
+            <div
+              style={{
+                background: "rgba(245, 158, 11, 0.1)",
+                border: "1.5px solid rgba(245, 158, 11, 0.45)",
+                borderRadius: "14px",
+                padding: "1rem 1.15rem",
+                marginBottom: "1.25rem",
+                textAlign: "left",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  color: "#b45309",
+                  fontWeight: "700",
+                  fontSize: "0.95rem",
+                  marginBottom: "0.35rem",
+                }}
+              >
+                <span>⚠️</span>
+                <span>Important: Takes Up to 24 Hours</span>
+              </div>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "0.88rem",
+                  color: "#78350f",
+                  lineHeight: "1.55",
+                  fontWeight: "500",
+                }}
+              >
+                Please note that account activation and banking network synchronization may take <strong>up to 24 hours</strong> to be fully verified and reflected across all your CBT tests.
+              </p>
+            </div>
+
+            <p style={{ fontSize: "0.85rem", color: "#64748b", lineHeight: "1.5", marginBottom: "1.25rem" }}>
+              {paymentConfirmed
+                ? "Your payment is verified! If your dashboard or test access does not immediately show full activation, please allow up to 24 hours for system synchronization."
+                : "Once confirmed by the payment gateway, your Lifetime Access will be unlocked automatically. Our admin team monitors all incoming payments."}
+            </p>
+
+            {completedRef && (
+              <div
+                style={{
+                  background: "rgba(47, 158, 157, 0.08)",
+                  border: "1px dashed rgba(47, 158, 157, 0.4)",
+                  borderRadius: "8px",
+                  padding: "0.5rem 0.75rem",
+                  fontSize: "0.8rem",
+                  color: "#0f766e",
+                  fontFamily: "monospace",
+                  marginBottom: "1.25rem",
+                  wordBreak: "break-all",
+                }}
+              >
+                Reference: {completedRef}
+              </div>
+            )}
+
+            {/* Action Button */}
+            <button
+              onClick={() => {
+                setShowPendingModal(false);
+                navigate("/dashboard");
+              }}
+              style={{
+                width: "100%",
+                padding: "0.9rem",
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #2F9E9D, #1a6060)",
+                color: "#fff",
+                fontWeight: "700",
+                fontSize: "1rem",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: "0 6px 20px rgba(47, 158, 157, 0.35)",
+                transition: "transform 0.15s ease",
+              }}
+            >
+              I Understand · Go to Dashboard
+            </button>
+
+            <div style={{ marginTop: "0.9rem", fontSize: "0.78rem", color: "#94a3b8" }}>
+              Need urgent help? Support Line: <strong>08032249468</strong>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

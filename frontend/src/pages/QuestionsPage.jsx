@@ -123,6 +123,8 @@ const QuestionsPage = () => {
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [payError, setPayError] = useState("");
+  const [showPostPayNoticeModal, setShowPostPayNoticeModal] = useState(false);
+  const [postPayNoticeRef, setPostPayNoticeRef] = useState("");
 
   // Persist test state to localStorage whenever it changes (including questions for instant restore)
   useEffect(() => {
@@ -603,6 +605,10 @@ const QuestionsPage = () => {
           callback: function (response) {
             setIsPaying(true);
             const ref = response.reference || txRef;
+            setPostPayNoticeRef(ref);
+            setShowPaywallModal(false);
+            setShowPostPayNoticeModal(true);
+
             api.post("/payment/verify", {
               reference: ref,
               trxref: response.trxref || txRef,
@@ -610,27 +616,23 @@ const QuestionsPage = () => {
               .then((verifyRes) => {
                 if (verifyRes.data?.success) {
                   updateUser({ isPaid: true, paidAt: new Date() });
-                  setShowPaywallModal(false);
                 } else {
                   // Fallback verification check
                   api.get("/payment/status").then(sRes => {
                     if (sRes.data?.isPaid) {
                       updateUser({ isPaid: true, paidAt: sRes.data.paidAt || new Date() });
-                      setShowPaywallModal(false);
                     } else {
-                      setPayError(verifyRes.data?.message || "Payment verification in progress. Please refresh.");
+                      setPayError(verifyRes.data?.message || "Payment verification in progress.");
                     }
                   });
                 }
               })
               .catch(() => {
-                // Network glitch or delay — check status endpoint
                 api.get("/payment/status").then(sRes => {
                   if (sRes.data?.isPaid) {
                     updateUser({ isPaid: true, paidAt: sRes.data.paidAt || new Date() });
-                    setShowPaywallModal(false);
                   } else {
-                    setPayError("Verification is processing. Refreshing your status...");
+                    setPayError("Verification is processing in the background.");
                   }
                 });
               })
@@ -644,6 +646,8 @@ const QuestionsPage = () => {
               if (sRes.data?.isPaid) {
                 updateUser({ isPaid: true, paidAt: sRes.data.paidAt || new Date() });
                 setShowPaywallModal(false);
+                setPostPayNoticeRef(txRef);
+                setShowPostPayNoticeModal(true);
               }
             }).catch(() => {});
             setIsPaying(false);
@@ -1536,6 +1540,137 @@ const QuestionsPage = () => {
             <div style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#64748b" }}>
               <IconLock size="0.85em" color="#64748b" style={{ marginRight: "4px" }} /> Secured with Paystack. Supports Cards, Bank Transfer, USSD, & Mobile Money.
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ⏱️ Post-Payment 24 Hours Activation Notice Modal */}
+      {showPostPayNoticeModal && (
+        <div
+          className="modal-overlay"
+          style={{
+            zIndex: 10001,
+            background: "rgba(10, 15, 30, 0.8)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.5rem",
+          }}
+        >
+          <div
+            className="modal-card"
+            style={{
+              maxWidth: "480px",
+              width: "100%",
+              borderRadius: "20px",
+              padding: "2rem",
+              background: "#ffffff",
+              border: "2px solid #2F9E9D",
+              boxShadow: "0 25px 60px rgba(0, 0, 0, 0.35)",
+              textAlign: "center",
+              color: "#1a1a2e",
+            }}
+          >
+            <div
+              style={{
+                width: "68px",
+                height: "68px",
+                margin: "0 auto 1.25rem",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, rgba(47, 158, 157, 0.15), rgba(245, 158, 11, 0.2))",
+                border: "2px solid #2F9E9D",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "2.2rem",
+              }}
+            >
+              ⏱️
+            </div>
+
+            <h2 style={{ fontSize: "1.4rem", fontWeight: "800", color: "#1a1a2e", marginBottom: "0.4rem" }}>
+              Payment Completed
+            </h2>
+
+            <p style={{ color: "#64748b", fontSize: "0.9rem", marginBottom: "1.2rem", lineHeight: "1.5" }}>
+              Thank you! Your transaction has been recorded.
+            </p>
+
+            <div
+              style={{
+                background: "rgba(245, 158, 11, 0.1)",
+                border: "1.5px solid rgba(245, 158, 11, 0.45)",
+                borderRadius: "14px",
+                padding: "1rem 1.15rem",
+                marginBottom: "1.25rem",
+                textAlign: "left",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  color: "#b45309",
+                  fontWeight: "700",
+                  fontSize: "0.95rem",
+                  marginBottom: "0.35rem",
+                }}
+              >
+                <span>⚠️</span>
+                <span>Important: Takes Up to 24 Hours</span>
+              </div>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "0.88rem",
+                  color: "#78350f",
+                  lineHeight: "1.55",
+                  fontWeight: "500",
+                }}
+              >
+                Please note that account activation and banking network synchronization may take <strong>up to 24 hours</strong> to be fully verified and reflected across all your CBT tests.
+              </p>
+            </div>
+
+            {postPayNoticeRef && (
+              <div
+                style={{
+                  background: "rgba(47, 158, 157, 0.08)",
+                  border: "1px dashed rgba(47, 158, 157, 0.4)",
+                  borderRadius: "8px",
+                  padding: "0.5rem 0.75rem",
+                  fontSize: "0.8rem",
+                  color: "#0f766e",
+                  fontFamily: "monospace",
+                  marginBottom: "1.25rem",
+                  wordBreak: "break-all",
+                }}
+              >
+                Reference: {postPayNoticeRef}
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                setShowPostPayNoticeModal(false);
+              }}
+              style={{
+                width: "100%",
+                padding: "0.85rem",
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #2F9E9D, #1a6060)",
+                color: "#fff",
+                fontWeight: "700",
+                fontSize: "1rem",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: "0 6px 20px rgba(47, 158, 157, 0.35)",
+              }}
+            >
+              I Understand · Continue Exam
+            </button>
           </div>
         </div>
       )}
