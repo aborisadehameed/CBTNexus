@@ -222,7 +222,7 @@ const DashboardPage = () => {
 
         {/* Action Panel */}
         <div className="main-dashboard-grid">
-          <div className="action-card glass-glow-card" style={{borderRadius: "0.2rem", paddingLeft: "2rem", paddingBottom: "2rem", paddingTop: "2rem" }}>
+          <div className="action-card glass-glow-card" style={{ borderRadius: "16px", padding: "2.4rem 2rem" }}>
             <h2>CBT Assessment</h2>
             <p>
               Test your knowledge with our computer-based testing portal. Once started, you'll have
